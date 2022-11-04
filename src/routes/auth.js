@@ -1,5 +1,7 @@
 const { Router } = require('express')
 const { db } = require('../firebase')
+const bcrypt = require('bcrypt')
+const {getAuth} = require("firebase-admin/auth");
 
 
 const auth = Router();
@@ -11,15 +13,29 @@ auth.post('/login', async (req, res) => {
         return;
     }
     const object = await db.collection('users').where('username', '==', username).get();
-    if(!object.docs.length){
+    if(object.docs.length){
         const user = {id : object.docs[0].id , ...object.docs[0].data()};
+        const equals = await bcrypt.compare(password, user.hash);
+        if(equals){
 
-        let pass = 0; //Encrypted password from user
+            /*
+            * Create token from user
+            * */
+            const userId = user.id;
+            const additionalClaims = {
+                username: user.username,
+                name : user.name,
+                rol : user.role
+            };
 
-        res.status(200).send(user);
-        return;
+            const token = await getAuth().createCustomToken(userId, additionalClaims);
+
+            console.log("Token->", token);
+
+            res.status(200).send({"token": token});
+            return;
+        }
     }
-
     res.status(404).send({error : 'Usuario o contraseña inválidos'})
     
 })
