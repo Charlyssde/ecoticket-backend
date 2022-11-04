@@ -6,7 +6,6 @@ const auth = Router();
 
 auth.post('/login', async (req, res) => {
     const {username, password} = req.body;
-    console.log(username, " : ",password);
     if(!username || !password){
         res.status(400).send({error : 'Username o password no definidos'})
         return;
@@ -15,7 +14,7 @@ auth.post('/login', async (req, res) => {
     if(!object.docs.length){
         const user = {id : object.docs[0].id , ...object.docs[0].data()};
 
-
+        let pass = 0; //Encrypted password from user
 
         res.status(200).send(user);
         return;
