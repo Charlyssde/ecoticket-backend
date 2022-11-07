@@ -1,9 +1,10 @@
+const verifyToken = require('../Middleware/validate-token');
 const {Router} = require('express')
 const {db} = require('../firebase')
 const bcrypt = require('bcrypt')
 const router = Router();
 
-router.get('/user', async (req, res) => {
+router.get('/user', verifyToken, async (req, res) => {
     try {
         const querySnapshot = await db.collection("users").get();
         const user = querySnapshot.docs.map(doc => ({
@@ -20,7 +21,7 @@ router.get('/user', async (req, res) => {
     }
 }); 
 
-router.get('/user/:id', async(req, res) => {
+router.get('/user/:id', verifyToken, async(req, res) => {
     const doc = await db.collection("users").doc(req.params.id).get();
 
     console.log({
@@ -34,13 +35,13 @@ router.get('/user/:id', async(req, res) => {
   })
 });
 
-router.post('/user', async (req, res) => {
+router.post('/user',verifyToken, async (req, res) => {
     const{ username, name, password, phone, email, role } = req.body
    const hash = await bcrypt.hash(password, 10);
     await db.collection('users').add({
         username,
         name,
-        hash,
+        password:hash,
         phone,
         email,
         role
@@ -53,7 +54,7 @@ router.post('/user', async (req, res) => {
     });
 });
 
-router.delete('/user/:id', async(req, res) => {
+router.delete('/user/:id',verifyToken, async(req, res) => {
     await db.collection('users').doc(req.params.id).delete();
 
     res.status(200).json({
@@ -61,7 +62,7 @@ router.delete('/user/:id', async(req, res) => {
     });
 });
 
-router.put('/user/:id', async(req, res) => {
+router.put('/user/:id',verifyToken, async(req, res) => {
     await db.collection('users').doc(req.params.id).update(req.body);
 
     res.status(200).json({
@@ -69,4 +70,5 @@ router.put('/user/:id', async(req, res) => {
     });
 
 });
+
 module.exports = router;
