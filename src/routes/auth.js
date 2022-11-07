@@ -35,7 +35,7 @@ auth.post('/login', async (req, res) => {
 
            // create 
             const userId = user.id;
-            const token = await jwt.sign({
+            const token = jwt.sign({
                 username: user.username,
                 name : user.name,
                 rol : user.role
