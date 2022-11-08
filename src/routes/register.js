@@ -4,7 +4,9 @@ const {db} = require('../firebase')
 const bcrypt = require('bcrypt')
 const router = Router();
 
-router.get('/register', async (req, res) => {
+const jwt = require('jsonwebtoken');
+
+router.get('/register', verifyToken, async (req, res) => {
     try {
         const querySnapshot = await db.collection("users").get();
         const user = querySnapshot.docs.map(doc => ({
@@ -21,7 +23,7 @@ router.get('/register', async (req, res) => {
     }
 }); 
 
-router.get('/register/:id', async(req, res) => {
+router.get('/register/:id', verifyToken,  async(req, res) => {
     const doc = await db.collection("users").doc(req.params.id).get();
 
     console.log({
@@ -35,10 +37,10 @@ router.get('/register/:id', async(req, res) => {
   })
 });
 
-router.post('/register', async (req, res) => {
+router.post('/register', verifyToken, async (req, res) => {
     console.log(req.body.additionalServices)
     if(req.body.additionalServices == false){
-        const{ additionalServices, businessName, commercialName, email, password, person, provider, username } = req.body
+        const{ additionalServices, businessName, commercialName, email, password, person, provider, username, role } = req.body
         const hash = await bcrypt.hash(password, 10);
         await db.collection('users').add({
             additionalServices,
@@ -49,15 +51,24 @@ router.post('/register', async (req, res) => {
             person, 
             provider,
             username,
+            role
         })
-        console.log("Usuario agregado correctamente");
-        res.status(201).json({
-            body: {
-                "messege": "Registro exitoso"
-            }
-            });
+
+        const object = await db.collection('users').where('username', '==', username).get();
+        const user = {id : object.docs[0].id , ...object.docs[0].data()};
+        console.log("user-------->", user);
+            const token = jwt.sign({
+                username: user.username,
+                name : user.commercialName,
+                id: user.id,
+                role: user.role
+            },process.env.TOKEN_SECRET)
+
+            console.log("Token->", token);
+
+            res.status(201).send({"token": token});
     }else{
-        const{ additionalServices, businessName, commercialName, email, pac, passwordPac, password,  person, provider, username, userpac} = req.body
+        const{ additionalServices, businessName, commercialName, email, pac, passwordPac, password,  person, provider, username, userpac, role} = req.body
         const hash = await bcrypt.hash(password, 10);
         const hash1 = await bcrypt.hash(passwordPac, 10);
         await db.collection('users').add({
@@ -71,19 +82,27 @@ router.post('/register', async (req, res) => {
             person, 
             provider,
             username,
-            userpac
+            userpac,
+            role
         })
-        console.log("Usuario agregado correctamente");
-        res.status(201).json({
-            body: {
-                "messege": "Registro exitoso"
-            }
-            });
+        const object = await db.collection('users').where('username', '==', username).get();
+        const user = {id : object.docs[0].id , ...object.docs[0].data()};
+        console.log("user-------->", user);
+            const token = jwt.sign({
+                username: user.username,
+                name : user.commercialName,
+                id: user.id,
+                role: user.role
+            },process.env.TOKEN_SECRET)
+
+            console.log("Token->", token);
+
+            res.status(201).send({"token": token});
     }
     
 });
 
-router.delete('/register/:id', async(req, res) => {
+router.delete('/register/:id', verifyToken, async(req, res) => {
     await db.collection('users').doc(req.params.id).delete();
 
     res.status(200).json({
@@ -91,7 +110,7 @@ router.delete('/register/:id', async(req, res) => {
     });
 });
 
-router.put('/register/:id', async(req, res) => {
+router.put('/register/:id', verifyToken, async(req, res) => {
     await db.collection('users').doc(req.params.id).update(req.body);
 
     res.status(200).json({

@@ -34,13 +34,14 @@ auth.post('/login', async (req, res) => {
             // const token = await getAuth().createCustomToken(userId, additionalClaims);
 
            // create 
-            const userId = user.id;
+          
             const token = jwt.sign({
                 username: user.username,
                 name : user.name,
-                rol : user.role
-                
-            },userId + process.env.TOKEN_SECRET)
+                rol : user.role,
+                id: user.id,
+                rol: user.role
+            },process.env.TOKEN_SECRET)
 
             console.log("Token->", token);
 
