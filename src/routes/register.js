@@ -39,7 +39,7 @@ router.get('/register/:id', verifyToken,  async(req, res) => {
 
 router.post('/register', verifyToken, async (req, res) => {
     console.log(req.body.additionalServices)
-    if(req.body.additionalServices == false){
+    if(req.body.additionalServices === false){
         const{ additionalServices, businessName, commercialName, email, password, person, provider, username, role } = req.body
         const hash = await bcrypt.hash(password, 10);
         await db.collection('users').add({
@@ -68,7 +68,7 @@ router.post('/register', verifyToken, async (req, res) => {
 
             res.status(201).send({"token": token});
     }else{
-        const{ additionalServices, businessName, commercialName, email, pac, passwordPac, password,  person, provider, username, userpac, role} = req.body
+        const{ additionalServices, businessName, commercialName, email, pac, passwordPac, password,  person, provider, username, userPac, role} = req.body
         const hash = await bcrypt.hash(password, 10);
         const hash1 = await bcrypt.hash(passwordPac, 10);
         await db.collection('users').add({
@@ -82,7 +82,7 @@ router.post('/register', verifyToken, async (req, res) => {
             person, 
             provider,
             username,
-            userpac,
+            userPac,
             role
         })
         const object = await db.collection('users').where('username', '==', username).get();

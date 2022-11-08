@@ -20,27 +20,11 @@ auth.post('/login', async (req, res) => {
         console.log(user);
         const equals = await bcrypt.compare(password, user.password);
         if(equals){
-
-            /*
-            * Create token from user FIREBASE
-            * */
-            // const userId = user.id;
-            // const additionalClaims = {
-            //     username: user.username,
-            //     name : user.name,
-            //     rol : user.role
-            // };
-
-            // const token = await getAuth().createCustomToken(userId, additionalClaims);
-
-           // create 
-          
             const token = jwt.sign({
                 username: user.username,
-                name : user.name,
-                rol : user.role,
+                name : user.commercialName,
+                role : user.role,
                 id: user.id,
-                rol: user.role
             },process.env.TOKEN_SECRET)
 
             console.log("Token->", token);
