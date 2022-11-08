@@ -8,5 +8,6 @@ app.use(cors({
 app.use(express.json())
 app.use(require('./routes/users'))
 app.use(require('./routes/auth'))
+app.use(require('./routes/register'))
 
 module.exports = app;

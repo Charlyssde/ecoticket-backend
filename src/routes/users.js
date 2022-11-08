@@ -66,7 +66,7 @@ router.put('/user/:id',verifyToken, async(req, res) => {
     await db.collection('users').doc(req.params.id).update(req.body);
 
     res.status(200).json({
-        messege: 'Usuario eliminado correctamente',
+        messege: 'Usuario editado correctamente',
     });
 
 });
