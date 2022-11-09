@@ -132,15 +132,15 @@ router.post('/email-condiciones', async(req, res) => {
 
 router.post('/email', async(req, res) => {
     
-    const {nombrepac, sitiopac, telefonopac, datos} = req.body;
+    const {name, site, phone, extras} = req.body;
 
     contentHTML=`
     <h1>Solicitud de incorporación</h1>
 
-    <p>Nombre del Pac: ${nombrepac}</p>
-    <p>Sitio web del pac: ${sitiopac}</p>
-    <p>Telefono del pac:${telefonopac}</p>
-    <p>Datos de contacto:${datos}</p>
+    <p>Nombre del Pac: ${name}</p>
+    <p>Sitio web del pac: ${site}</p>
+    <p>Telefono del pac:${phone}</p>
+    <p>Datos de contacto:${extras}</p>
 
     `;
 
