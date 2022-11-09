@@ -51,7 +51,7 @@ router.post('/register', verifyToken, async (req, res) => {
             person, 
             provider,
             username,
-            role
+            role  
         })
 
         const object = await db.collection('users').where('username', '==', username).get();

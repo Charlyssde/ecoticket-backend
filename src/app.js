@@ -9,5 +9,6 @@ app.use(express.json())
 app.use(require('./routes/users'))
 app.use(require('./routes/auth'))
 app.use(require('./routes/register'))
+app.use(require('./routes/email'))
 
 module.exports = app;
