@@ -117,7 +117,7 @@ router.post('/email-condiciones', async(req, res) => {
     
         const envio = await transporter.sendMail({
         from:"'ECOTICKET' <benitolsca@gmail.com>",
-        to:'texcharly9@gmail.com',
+        to:'maheya@gmail.com',
         subject:'AVISO DE PRIVACIDAD, TÉRMINOS Y CONDICIONES',
         attachments:[
            { filename: 'Aviso de privacidad.pdf', path:'./Aviso de privacidad.pdf'},
