@@ -1,13 +1,14 @@
 const {Router} = require('express');
 const router = Router();
 const nodemailer = require('nodemailer');
+const EmailAuth = require("../utils/email-auth");
 
 
-router.post('/email-condiciones', async(req, res) => {
-    
-    const {destinatario } = req.body;
+router.post('/email-condiciones', async (req, res) => {
 
-    contentHTML=`
+    const {to} = req.body;
+
+    contentHTML = `
     <div align="justify"> 
     <h1>Términos y Condiciones</h1>
 
@@ -109,32 +110,32 @@ router.post('/email-condiciones', async(req, res) => {
         port: 465,
         secure: true, // true for 465, false for other ports
         auth: {
-          user: 'benitolsca@gmail.com', // generated ethereal user
-          pass: 'meomkenvnvenxxmg', // generated ethereal password
+            user: EmailAuth.email, // generated ethereal user
+            pass: EmailAuth.password, // generated ethereal password
         },
-      });
+    });
 
-    
-        const envio = await transporter.sendMail({
-        from:"'ECOTICKET' <benitolsca@gmail.com>",
-        to:req.body.destinatario,
-        subject:'AVISO DE PRIVACIDAD, TÉRMINOS Y CONDICIONES',
-        attachments:[
-           { filename: 'Aviso de privacidad.pdf', path:'./Aviso de privacidad.pdf'},
-           { filename: 'Téminos y condiciones.pdf', path:'./Aviso de privacidad.pdf'}
+
+    const envio = await transporter.sendMail({
+        from: `ECOTICKET <${EmailAuth.email}>`,
+        to: to,
+        subject: 'AVISO DE PRIVACIDAD, TÉRMINOS Y CONDICIONES',
+        attachments: [
+            {filename: 'Aviso de privacidad.pdf', path: './Aviso de privacidad.pdf'},
+            {filename: 'Téminos y condiciones.pdf', path: './Aviso de privacidad.pdf'}
         ]
-      })
-      console.log("Enviado correctamente ------>", envio.messageId)
-      res.status(200).json({
+    })
+    console.log("Enviado correctamente ------>", envio.messageId)
+    res.status(200).json({
         messege: 'Correo enviado correctamente',
     });
 });
 
-router.post('/email', async(req, res) => {
-    
+router.post('/email', async (req, res) => {
+
     const {name, site, phone, extras} = req.body;
 
-    contentHTML=`
+    contentHTML = `
     <h1>Solicitud de incorporación</h1>
 
     <p>Nombre del Pac: ${name}</p>
@@ -150,32 +151,34 @@ router.post('/email', async(req, res) => {
         port: 465,
         secure: true, // true for 465, false for other ports
         auth: {
-          user: 'benitolsca@gmail.com', // generated ethereal user
-          pass: 'meomkenvnvenxxmg', // generated ethereal password
+            user: EmailAuth.email, // generated ethereal user
+            pass: EmailAuth.password, // generated ethereal password
         },
-      });
+    });
 
-    
-        const envio = await transporter.sendMail({
+
+    const envio = await transporter.sendMail({
         from: "'ECOTICKET' <benitolsca@gmail.com>",
-        to:'benitolsca@gmail.com',
+        to: EmailAuth.email,
         subject: 'Solicitud de Registro PAC',
         html: contentHTML
-      })
-      console.log("Enviado correctamente ------>", envio.messageId)
-      res.status(200).json({
+    })
+    console.log("Enviado correctamente ------>", envio.messageId)
+    res.status(200).json({
         messege: 'Correo enviado correctamente',
     });
 });
 
-router.post('/email-credenciales', async(req, res) => {
-    
-    const {destinatario, credenciales, asunto} = req.body;
+router.post('/email-credenciales', async (req, res) => {
 
-    contentHTML=`
-    <h1>${asunto}</h1>
+    const {to, username, password, subject} = req.body;
 
-    <p>Datos de contacto:${credenciales}</p>
+    contentHTML = `
+    <h1>Usted ha sido invitado a ingresar al Sistema de Autofacturación ECOTICKET</h1>
+    <h2>Las siguientes son sus credenciales de acceso: </h2>
+
+    <p>Su nombre de usuario:${username}</p>
+    <p>Su contraseña:${password}</p>
 
     `;
 
@@ -185,24 +188,23 @@ router.post('/email-credenciales', async(req, res) => {
         port: 465,
         secure: true, // true for 465, false for other ports
         auth: {
-          user: 'benitolsca@gmail.com', // generated ethereal user
-          pass: 'meomkenvnvenxxmg', // generated ethereal password
+            user: EmailAuth.email, // generated ethereal user
+            pass: EmailAuth.password, // generated ethereal password
         },
-      });
+    });
 
-    
-        const envio = await transporter.sendMail({
-        from:"'ECOTICKET' <benitolsca@gmail.com>",
-        to:req.body.destinatario,
-        subject:req.body.asunto,
+
+    const envio = await transporter.sendMail({
+        from: "'ECOTICKET' <benitolsca@gmail.com>",
+        to: to,
+        subject: subject,
         html: contentHTML
-      })
-      console.log("Enviado correctamente ------>", envio.messageId)
-      res.status(200).json({
+    })
+    console.log("Enviado correctamente ------>", envio.messageId)
+    res.status(200).json({
         messege: 'Correo enviado correctamente',
     });
 });
-
 
 
 module.exports = router;

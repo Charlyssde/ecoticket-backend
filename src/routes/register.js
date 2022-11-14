@@ -37,7 +37,7 @@ router.get('/register/:id', verifyToken,  async(req, res) => {
   })
 });
 
-router.post('/register', verifyToken, async (req, res) => {
+router.post('/register', async (req, res) => {
     console.log(req.body.additionalServices)
     if(req.body.additionalServices === false){
         const{ additionalServices, businessName, commercialName, email, password, person, provider, username, role } = req.body
