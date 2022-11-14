@@ -10,5 +10,6 @@ app.use(require('./routes/users'))
 app.use(require('./routes/auth'))
 app.use(require('./routes/register'))
 app.use(require('./routes/email'))
+app.use(require('./routes/store'))
 
 module.exports = app;
