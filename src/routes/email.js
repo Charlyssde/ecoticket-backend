@@ -2,6 +2,9 @@ const {Router} = require('express');
 const router = Router();
 const nodemailer = require('nodemailer');
 const EmailAuth = require("../utils/email-auth");
+const {db} = require("../firebase");
+const generateRandomText = require("../utils/generateRandomText");
+const bcrypt = require("bcrypt");
 
 
 router.post('/email-condiciones', async (req, res) => {
@@ -205,5 +208,47 @@ router.post('/email-credenciales', async (req, res) => {
     });
 });
 
+
+router.post('/email-password', async(req, res) => {
+    const {email} = req.body;
+
+    const user = await db.collection('users').where('email', '==', email).get();
+    if(user.docs.length){
+        let data = {id : user.docs[0].id , ...user.docs[0].data()};
+        let password = generateRandomText();
+        const content = `
+        <h1> Credenciales de acceso </h1>
+        <h2>Ha solicitado recuperar sus credenciales de acceso por parte de Ecoticket</h2>
+        
+        <p>Nombre de usuario : ${data.username}</p>
+        <p>Contraseña : ${password}</p>
+    `
+        const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true, // true for 465, false for other ports
+            auth: {
+                user: EmailAuth.email, // generated ethereal user
+                pass: EmailAuth.password, // generated ethereal password
+            },
+        });
+        transporter.sendMail({
+            from: `ECOTICKET <${EmailAuth.email}>`,
+            to: email,
+            subject: 'AVISO DE PRIVACIDAD, TÉRMINOS Y CONDICIONES',
+            html : content
+        }).then(async (resp) => {
+            const hashedPassword = await bcrypt.hash(password, 10)
+            await db.collection('users').doc(data.id).update({password: hashedPassword});
+            res.status(200).json({message : 'Se ha enviado un correo con las credenciales al correo indicado'})
+        }).catch((error) => {
+            console.log("Error->", error)
+            res.status(500).json({message : 'Ha ocurrido un error al intentar enviar el correo, por favor reintente más tarde.'})
+        })
+    }else{
+        res.status(404).json({message : 'No existe un usuario asociado al correo ingresado, por favor verifique la información'})
+    }
+
+})
 
 module.exports = router;
