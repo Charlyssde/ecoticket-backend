@@ -115,7 +115,6 @@ router.post('/email-condiciones', async (req, res) => {
         },
     });
 
-
     const envio = await transporter.sendMail({
         from: `ECOTICKET <${EmailAuth.email}>`,
         to: to,

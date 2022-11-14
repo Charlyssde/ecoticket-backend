@@ -40,7 +40,7 @@ router.get('/register/:id', verifyToken,  async(req, res) => {
 router.post('/register', async (req, res) => {
     console.log(req.body.additionalServices)
     if(req.body.additionalServices === false){
-        const{ additionalServices, businessName, commercialName, email, password, person, provider, username, role } = req.body
+        const{ additionalServices, businessName, commercialName, email, password, person, provider, username } = req.body
         const hash = await bcrypt.hash(password, 10);
         await db.collection('users').add({
             additionalServices,
@@ -51,8 +51,7 @@ router.post('/register', async (req, res) => {
             person, 
             provider,
             username,
-            role  
-        })
+                })
 
         const object = await db.collection('users').where('username', '==', username).get();
         const user = {id : object.docs[0].id , ...object.docs[0].data()};
