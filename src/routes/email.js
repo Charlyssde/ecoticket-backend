@@ -157,7 +157,7 @@ router.post('/email', async (req, res) => {
 
 
     const envio = await transporter.sendMail({
-        from: "'ECOTICKET' <benitolsca@gmail.com>",
+        from: `ECOTICKET <${EmailAuth.email}>`,
         to: EmailAuth.email,
         subject: 'Solicitud de Registro PAC',
         html: contentHTML
@@ -194,7 +194,7 @@ router.post('/email-credenciales', async (req, res) => {
 
 
     const envio = await transporter.sendMail({
-        from: "'ECOTICKET' <benitolsca@gmail.com>",
+        from: `ECOTICKET <${EmailAuth.email}>`,
         to: to,
         subject: subject,
         html: contentHTML
