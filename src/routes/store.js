@@ -41,6 +41,28 @@ store.post('/store/', async (req, res) => {
     })
 
 })
-store.put('/store/')
+store.put('/store/:id', async (req, res) => {
+    const id = req.params.id;
+    const {rfc, email, name} = req.body;
+    await db.collection('stores').doc(id).update({
+        rfc,
+        email,
+        name
+    }).then((data) => {
+        if(data.writeTime){
+            res.status(200).json({id : id});
+        }
+    }).catch((error) => {
+        res.status(500).json({message : 'No se ha encontrado un elemento con el identificador ' + id})
+    });
+})
 
+store.delete('/store/:id', async (req, res) => {
+    const id = req.params.id;
+    await db.collection('stores').doc(id).delete().then(() => {
+        res.status(200).json({message : 'success'})
+    }).catch((error) => {
+        res.status(500).json({message : error})
+    })
+})
 module.exports = store;
