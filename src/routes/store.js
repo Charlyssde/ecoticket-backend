@@ -21,19 +21,19 @@ store.get('/store/:id', async(req, res) => {
     }
 })
 store.post('/store/', async (req, res) => {
-    const {name, email, rfc, owner} = req.body;
+    const {name, email, rfc, owner, toPay, generatedTickets, generatedInvoices, nss, csdPassword, cer, key} = req.body;
     db.collection('stores').add({
         name,
         email,
         rfc,
         owner,
-        toPay : 0,
-        generatedTickets : 0,
-        generatedInvoices : 0,
-        nss : '',
-        csdPassword : '',
-        cert : '',
-        key : '',
+        toPay,
+        generatedTickets,
+        generatedInvoices,
+        nss,
+        csdPassword,
+        cer,
+        key,
     }).then((resp) => {
         res.status(200).json(resp)
     }).catch(error => {
@@ -43,11 +43,17 @@ store.post('/store/', async (req, res) => {
 })
 store.put('/store/:id', async (req, res) => {
     const id = req.params.id;
-    const {rfc, email, name} = req.body;
+    const {name, email, rfc, owner, toPay, generatedTickets, generatedInvoices, nss, csdPassword} = req.body;
     await db.collection('stores').doc(id).update({
-        rfc,
+        name,
         email,
-        name
+        rfc,
+        owner,
+        toPay,
+        generatedTickets,
+        generatedInvoices,
+        nss,
+        csdPassword,
     }).then((data) => {
         if(data.writeTime){
             res.status(200).json({id : id});

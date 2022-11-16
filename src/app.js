@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require("cors");
+
 const app = express();
 app.use(express.urlencoded({extended : false}))
 app.use(cors({
@@ -11,5 +12,6 @@ app.use(require('./routes/auth'))
 app.use(require('./routes/register'))
 app.use(require('./routes/email'))
 app.use(require('./routes/store'))
+app.use(require('./routes/file'))
 
 module.exports = app;
