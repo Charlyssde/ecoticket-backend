@@ -25,7 +25,8 @@ auth.post('/login', async (req, res) => {
                 const additionalClaims = {
                     username: user.username,
                     id : user.id,
-                    name: user.name ? user.name : user.commercialName,
+                    authId : user.uid,
+                    name: user.commercialName,
                     role: user.role
                 };
                 const token = await getAuth().createCustomToken(userId, additionalClaims);

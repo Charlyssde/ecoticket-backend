@@ -40,42 +40,51 @@ router.get('/register/:id', verifyToken, async (req, res) => {
 
 router.post('/register', async (req, res) => {
     const {additionalServices,businessName,commercialName,email,pac,passwordPac,password,person,provider,username,userPac, role} = req.body
-    const hash = await bcrypt.hash(password, 10);
-    const result = await db.collection('users').add({
-        additionalServices,
-        businessName,
-        commercialName,
-        email,
-        pac,
-        passwordPac,
-        password: hash,
-        person,
-        provider,
-        username,
-        userPac,
-        role
-    })
-    const user = {id: result.id, ...req.body}
 
     getAuth().createUser({
         email : email,
         password : password,
-        uid : user.id,
         disabled : false,
         emailVerified : true,
         displayName : commercialName
-    }).then(async (result) => {
+    }).then(async (userRecord) => {
+        const hash = await bcrypt.hash(password, 10);
+        const result = await db.collection('users').add({
+            uid : userRecord.uid,
+            additionalServices,
+            businessName,
+            commercialName,
+            email,
+            pac,
+            passwordPac,
+            password: hash,
+            person,
+            provider,
+            username,
+            userPac,
+            role
+        })
+        const user = {id: result.id, ...req.body}
         const additionalClaims = {
             username: user.username,
             id : user.id,
-            name: user.name ? user.name : user.commercialName,
+            authId : user.uid,
+            name: user.commercialName,
             role: user.role
         };
-        const token = await getAuth().createCustomToken(result.uid, additionalClaims);
+        const token = await getAuth().createCustomToken(user.id, additionalClaims);
         res.status(200).send({"token": token});
         res.end();
     }).catch((error) => {
-        console.log("Error->", error)
+        let message = '';
+        const m = error.errorInfo.code;
+        if(m === 'auth/email-already-exists'){
+            message = 'El correo ya ha sido registrado';
+        }else{
+            message = 'Error desconocido'
+        }
+        console.log(error.errorInfo)
+        res.status(500).json({message : message})
     })
 });
 
