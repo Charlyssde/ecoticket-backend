@@ -38,45 +38,15 @@ router.get('/register/:id', verifyToken,  async(req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-    console.log(req.body.additionalServices)
-    if(req.body.additionalServices === false){
-        const{ additionalServices, businessName, commercialName, email, password, person, provider, username } = req.body
-        const hash = await bcrypt.hash(password, 10);
-        await db.collection('users').add({
-            additionalServices,
-            businessName,
-            commercialName,
-            email,
-            password:hash,
-            person, 
-            provider,
-            username,
-                })
-
-        const object = await db.collection('users').where('username', '==', username).get();
-        const user = {id : object.docs[0].id , ...object.docs[0].data()};
-        console.log("user-------->", user);
-            const token = jwt.sign({
-                username: user.username,
-                name : user.commercialName,
-                id: user.id,
-                role: user.role
-            },process.env.TOKEN_SECRET)
-
-            console.log("Token->", token);
-
-            res.status(201).send({"token": token});
-    }else{
         const{ additionalServices, businessName, commercialName, email, pac, passwordPac, password,  person, provider, username, userPac, role} = req.body
         const hash = await bcrypt.hash(password, 10);
-        const hash1 = await bcrypt.hash(passwordPac, 10);
-        await db.collection('users').add({
+        const result =  await db.collection('users').add({
             additionalServices,
             businessName,
             commercialName,
             email,
             pac,
-            passwordPac:hash1,
+            passwordPac,
             password:hash,
             person, 
             provider,
@@ -84,9 +54,8 @@ router.post('/register', async (req, res) => {
             userPac,
             role
         })
-        const object = await db.collection('users').where('username', '==', username).get();
-        const user = {id : object.docs[0].id , ...object.docs[0].data()};
-        console.log("user-------->", user);
+        const user = {id : result.id, ...req.body}
+
             const token = jwt.sign({
                 username: user.username,
                 name : user.commercialName,
@@ -97,8 +66,7 @@ router.post('/register', async (req, res) => {
             console.log("Token->", token);
 
             res.status(201).send({"token": token});
-    }
-    
+
 });
 
 router.delete('/register/:id', verifyToken, async(req, res) => {

@@ -22,7 +22,7 @@ router.get('/user', verifyToken, async (req, res) => {
     }
 }); 
 
-router.get('/user/:id', verifyToken, async(req, res) => {
+router.get('/user/:id', async(req, res) => {
     const doc = await db.collection("users").doc(req.params.id).get();
 
     console.log({
@@ -74,7 +74,7 @@ router.put('/user/:id',verifyToken, async(req, res) => {
 
 });
 
-router.get('/userid/:id', verifyToken, async (req, res) => {
+router.get('/userid/:id', async (req, res) => {
     
 }); 
 
