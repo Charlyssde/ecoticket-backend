@@ -74,7 +74,7 @@ router.put('/user/:id',verifyToken, async(req, res) => {
 
 });
 
-router.get('/userid/:id', async (req, res) => {
+router.get('/userid/:id', verifyToken, async (req, res) => {
     
 }); 
 
