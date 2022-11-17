@@ -27,6 +27,19 @@ auth.post('/login', async (req, res) => {
                 id: user.id,
             },process.env.TOKEN_SECRET)
 
+
+               /*
+            * Create token from user FIREBASE
+            * */
+            // const userId = user.id;
+            // const additionalClaims = {
+            //     username: user.username,
+            //     name : user.name,
+            //     role : user.role
+            // };
+
+            // const token = await getAuth().createCustomToken(userId, additionalClaims);
+
             console.log("Token->", token);
 
             res.status(200).send({"token": token});
