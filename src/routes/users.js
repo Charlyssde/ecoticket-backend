@@ -4,6 +4,9 @@ const {db} = require('../firebase')
 const bcrypt = require('bcrypt')
 const moment = require('moment')
 const router = Router();
+const generateRandomText = require("../utils/generateRandomText");
+const nodemailer = require('nodemailer');
+const EmailAuth = require("../utils/email-auth");
 
 router.get('/user', verifyToken, async (req, res) => {
     try {
@@ -37,21 +40,44 @@ router.get('/user/:id', async(req, res) => {
 });
 
 router.post('/user',verifyToken, async (req, res) => {
-    const{ username, name, apellidouno, apellidodos, password, permiso, role, sucursal} = req.body
+    const{ username, name, apellidouno, apellidodos, role, sucursal, correo} = req.body
+    let password = generateRandomText();
     const hash = await bcrypt.hash(password, 10);
-   let currentDate = moment().format('YYYY-MM-DD')
     await db.collection('users').add({
         username,
         name,
         apellidouno,
         apellidodos,
         password:hash,
-        permiso,
         role,
-        fecha : currentDate,
+        correo,
         sucursal
     })
-    console.log("Usuario agregado correctamente");
+
+    contentHTML = `
+    <h1>Credenciales de acceso ECOTICKET </h1>
+
+    <p>Usuario: ${req.body.username}</p>
+    <p>contraseña: ${password}</p>
+    `;
+
+    const transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true, // true for 465, false for other ports
+        auth: {
+            user: EmailAuth.email, // generated ethereal user
+            pass: EmailAuth.password, // generated ethereal password
+        },
+    });
+
+    await transporter.sendMail({
+        from: `ECOTICKET <${EmailAuth.email}>`,
+        to: req.body.correo,
+        subject: 'CREDENCIALES ECOTICKET',
+        html: contentHTML
+    })
+
     res.status(201).json({
         messege: 'Usuario agregado correctamente',
     });
@@ -75,7 +101,12 @@ router.put('/user/:id',verifyToken, async(req, res) => {
 });
 
 router.get('/userid/:id', verifyToken, async (req, res) => {
-    
+    const id = req.params.id;
+    const data = await db.collection('users').where('sucursal', '==', id).get();
+    const result = data.docs.map((d) => {
+        return {id : d.id, ...d.data()}
+    })
+    res.status(200).json(result)
 }); 
 
 module.exports = router;
