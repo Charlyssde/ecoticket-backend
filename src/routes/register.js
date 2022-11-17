@@ -64,7 +64,7 @@ router.post('/register', async (req, res) => {
             userPac,
             role
         })
-        const user = {id: result.id, ...req.body}
+        const user = {id: result.id, uid : userRecord.uid, ...req.body}
         const additionalClaims = {
             username: user.username,
             id : user.id,
@@ -72,7 +72,7 @@ router.post('/register', async (req, res) => {
             name: user.commercialName,
             role: user.role
         };
-        const token = await getAuth().createCustomToken(user.id, additionalClaims);
+        const token = await getAuth().createCustomToken(user.uid, additionalClaims);
         res.status(200).send({"token": token});
         res.end();
     }).catch((error) => {

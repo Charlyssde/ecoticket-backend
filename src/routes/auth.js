@@ -20,7 +20,7 @@ auth.post('/login', async (req, res) => {
         const user = {id : object.docs[0].id , ...object.docs[0].data()};
         const equals = await bcrypt.compare(password, user.password);
         if(equals){
-            const userId = user.id;
+            const userId = user.uid;
             getAuth().getUser(userId).then(async (result) => {
                 const additionalClaims = {
                     username: user.username,
