@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt')
 const {getAuth} = require("firebase-admin/auth");
 
 const jwt = require('jsonwebtoken');
+const verifyToken = require("../Middleware/validate-token");
 
 
 const auth = Router();
@@ -17,37 +18,28 @@ auth.post('/login', async (req, res) => {
     const object = await db.collection('users').where('username', '==', username).get();
     if(object.docs.length){
         const user = {id : object.docs[0].id , ...object.docs[0].data()};
-        console.log(user);
         const equals = await bcrypt.compare(password, user.password);
         if(equals){
-            const token = jwt.sign({
-                username: user.username,
-                name : user.commercialName,
-                role : user.role,
-                id: user.id,
-            },process.env.TOKEN_SECRET)
-
-
-               /*
-            * Create token from user FIREBASE
-            * */
-            // const userId = user.id;
-            // const additionalClaims = {
-            //     username: user.username,
-            //     name : user.name,
-            //     role : user.role
-            // };
-
-            // const token = await getAuth().createCustomToken(userId, additionalClaims);
-
-            console.log("Token->", token);
-
-            res.status(200).send({"token": token});
-            return;
+            const userId = user.id;
+            getAuth().getUser(userId).then(async (result) => {
+                const additionalClaims = {
+                    username: user.username,
+                    id : user.id,
+                    name: user.name ? user.name : user.commercialName,
+                    role: user.role
+                };
+                const token = await getAuth().createCustomToken(userId, additionalClaims);
+                res.status(200).send({"token": token});
+                res.end();
+            }).catch((error) => {
+                res.status(404).send({error : 'Usuario o contraseña inválidos'})
+            })
+        }else{
+            res.status(404).send({error : 'Usuario o contraseña inválidos'})
         }
+    }else{
+        res.status(404).send({error : 'Usuario o contraseña inválidos'})
     }
-    res.status(404).send({error : 'Usuario o contraseña inválidos'})
-    
-})
 
+})
 module.exports = auth;
