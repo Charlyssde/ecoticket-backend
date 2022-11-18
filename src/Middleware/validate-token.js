@@ -1,17 +1,25 @@
 const jwt = require('jsonwebtoken')
+const {getAuth} = require("firebase-admin/auth");
 
 const verifyToken = (req, res, next) => {
-    var token = req.headers.authorization.replace('Bearer ', '');
-    //const token = req.header('Authorization')
-    console.log("token sin bearer", token);
+    if(!req.headers.authorization) return res.status(401).json({error : 'Acceso denegado'})
+
+    let token = req.headers.authorization.replace('Bearer ', '');
+
     if (!token) return res.status(401).json({ error: 'Acceso denegado' })
-    try {
-        const verified = jwt.verify(token, process.env.TOKEN_SECRET)
-        req.user = verified
-        next() // continuamos
-    } catch (error) {
-        res.status(400).json({error: 'token no es válido'})
-    }
+
+    getAuth()
+        .verifyIdToken(token)
+        .then((decodedToken) => {
+            const uid = decodedToken.uid;
+            console.log("Token->", decodedToken)
+            next();
+        })
+        .catch((error) => {
+            console.log("Error->", error)
+            res.status(401).json({message : 'Acceso denegado'})
+        });
+
 }
 
 module.exports = verifyToken;
