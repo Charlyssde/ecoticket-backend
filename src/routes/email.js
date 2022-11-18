@@ -235,7 +235,7 @@ router.post('/email-password', async(req, res) => {
         transporter.sendMail({
             from: `ECOTICKET <${EmailAuth.sender}>`,
             to: email,
-            subject: 'AVISO DE PRIVACIDAD, TÉRMINOS Y CONDICIONES',
+            subject: 'Solicitud de restauración de contraseña Ecoticket',
             html : content
         }).then(async (resp) => {
             const hashedPassword = await bcrypt.hash(password, 10)
