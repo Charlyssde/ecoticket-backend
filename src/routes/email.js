@@ -119,7 +119,7 @@ router.post('/email-condiciones', async (req, res) => {
     });
 
     const envio = await transporter.sendMail({
-        from: `ECOTICKET <${EmailAuth.email}>`,
+        from: `ECOTICKET <${EmailAuth.sender}>`,
         to: to,
         subject: 'AVISO DE PRIVACIDAD, TÉRMINOS Y CONDICIONES',
         attachments: [
@@ -160,7 +160,7 @@ router.post('/email', async (req, res) => {
 
 
     const envio = await transporter.sendMail({
-        from: `ECOTICKET <${EmailAuth.email}>`,
+        from: `ECOTICKET <${EmailAuth.sender}>`,
         to: EmailAuth.email,
         subject: 'Solicitud de Registro PAC',
         html: contentHTML
@@ -197,7 +197,7 @@ router.post('/email-credenciales', async (req, res) => {
 
 
     const envio = await transporter.sendMail({
-        from: `ECOTICKET <${EmailAuth.email}>`,
+        from: `ECOTICKET <${EmailAuth.sender}>`,
         to: to,
         subject: subject,
         html: contentHTML
@@ -233,7 +233,7 @@ router.post('/email-password', async(req, res) => {
             },
         });
         transporter.sendMail({
-            from: `ECOTICKET <${EmailAuth.email}>`,
+            from: `ECOTICKET <${EmailAuth.sender}>`,
             to: email,
             subject: 'AVISO DE PRIVACIDAD, TÉRMINOS Y CONDICIONES',
             html : content
