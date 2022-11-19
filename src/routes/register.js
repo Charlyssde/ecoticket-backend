@@ -65,12 +65,20 @@ router.post('/register', async (req, res) => {
             role
         })
         const user = {id: result.id, uid : userRecord.uid, ...req.body}
+        let validRoles = [user.role];
+        if(user.role !== 'owner'){
+            const role = await db.collection('role').doc(user.role).get();
+            let rol = role.data();
+            let keys = Object.keys(rol);
+            validRoles = keys.filter((key) =>  rol[key] === true )
+        }
         const additionalClaims = {
             username: user.username,
             id : user.id,
             authId : user.uid,
             name: user.commercialName,
-            role: user.role
+            role: validRoles,
+            sucursal : user.sucursal ? user.sucursal : 'none'
         };
         const token = await getAuth().createCustomToken(user.uid, additionalClaims);
         res.status(200).send({"token": token});
