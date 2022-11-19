@@ -3,20 +3,13 @@ const { db } = require('../firebase')
 const bcrypt = require('bcrypt')
 const {getAuth} = require("firebase-admin/auth");
 
-const jwt = require('jsonwebtoken');
-const verifyToken = require("../Middleware/validate-token");
-
-
 const auth = Router();
 
 const collection = 'users'
 
 auth.post('/login', async (req, res) => {
     const {username, password} = req.body;
-    if(!username || !password){
-        res.status(400).send({error : 'Username o password no definidos'})
-        return;
-    }
+    if(!username || !password) return res.status(400).send({error : 'Username o password no definidos'})
     const object = await db.collection(collection).where('username', '==', username).get();
     if(object.docs.length){
         const user = {id : object.docs[0].id , ...object.docs[0].data()};
@@ -24,12 +17,20 @@ auth.post('/login', async (req, res) => {
         if(equals){
             const userId = user.uid;
             getAuth().getUser(userId).then(async (result) => {
+                let validRoles = [user.role];
+                if(user.role !== 'owner'){
+                    const role = await db.collection('role').doc(user.role).get();
+                    let rol = role.data();
+                    let keys = Object.keys(rol);
+                    validRoles = keys.filter((key) =>  rol[key] === true )
+                }
                 const additionalClaims = {
                     username: user.username,
                     id : user.id,
                     authId : user.uid,
-                    name: user.commercialName,
-                    role: user.role
+                    name: user.commercialName ? user.commercialName : user.name,
+                    role: validRoles,
+                    sucursal : user.sucursal ? user.sucursal : 'none'
                 };
                 const token = await getAuth().createCustomToken(userId, additionalClaims);
                 res.status(200).send({"token": token});
@@ -53,14 +54,11 @@ auth.post('/newpassword/:id', async(req, res) => {
 
     if(user.exists){
         let data = user.data();
-        console.log("Data->", data)
         if(await bcrypt.compare(currentPassword, data.password))
             await db.collection(collection).doc(id).update({
                 password : await bcrypt.hash(newPassword, 10)
             }).then(() => {
-                getAuth().updateUser(data.uid, {password : newPassword}).then((userRedcord) => {
-                    console.log("UserUpdated->", userRedcord)
-                })
+                getAuth().updateUser(data.uid, {password : newPassword}).then((userRecord) => {})
                 res.status(200).json({message : true})
             }).catch((error) => {
                 console.log("Error->", error)
