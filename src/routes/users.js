@@ -7,6 +7,7 @@ const router = Router();
 const generateRandomText = require("../utils/generateRandomText");
 const nodemailer = require('nodemailer');
 const EmailAuth = require("../utils/email-auth");
+const {getAuth} = require("firebase-admin/auth");
 
 router.get('/user', verifyToken, async (req, res) => {
     try {
@@ -42,16 +43,35 @@ router.get('/user/:id', async(req, res) => {
 router.post('/user',verifyToken, async (req, res) => {
     const{ username, name, apellidouno, apellidodos, role, sucursal, correo} = req.body
     let password = generateRandomText();
-    const hash = await bcrypt.hash(password, 10);
-    await db.collection('users').add({
-        username,
-        name,
-        apellidouno,
-        apellidodos,
-        password:hash,
-        role,
-        correo,
-        sucursal
+    getAuth().createUser({
+        email : correo,
+        password : password,
+        disabled : false,
+        emailVerified : true,
+        displayName : name
+    }).then(async (userRecord) => {
+        const hash = await bcrypt.hash(password, 10);
+        await db.collection('users').add({
+            uid : userRecord.uid,
+            username,
+            name,
+            apellidouno,
+            apellidodos,
+            password:hash,
+            role,
+            correo,
+            sucursal
+        })
+    }).catch((error) => {
+        let message = '';
+        const m = error.errorInfo.code;
+        if(m === 'auth/email-already-exists'){
+            message = 'El correo ya ha sido registrado';
+        }else{
+            message = 'Error desconocido'
+        }
+        console.log(error.errorInfo)
+        res.status(500).json({message : message})
     })
 
     contentHTML = `
