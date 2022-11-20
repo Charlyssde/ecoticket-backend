@@ -104,11 +104,25 @@ router.post('/user',verifyToken, async (req, res) => {
 });
 
 router.delete('/user/:id',verifyToken, async(req, res) => {
-    await db.collection('users').doc(req.params.id).delete();
-
-    res.status(200).json({
-        messege: 'Usuario eliminado correctamente',
+    const doc = await db.collection("users").doc(req.params.id).get();
+    console.log({
+        id: doc.id,
+        uid:  doc.uid,
+        ...doc.data(),
     });
+
+    const user = {id: doc.id,  ...doc.data(),}
+    getAuth().deleteUser(user.uid).then(async () => {
+            await db.collection('users').doc(user.id).delete();
+            res.status(200).json({
+            messege: 'Usuario eliminado correctamente',
+            });
+    }).catch((error) => {
+        console.log(error)
+        res.status(500).json({
+            messege: 'Error al eliminar',
+        });
+    })
 });
 
 router.put('/user/:id',verifyToken, async(req, res) => {
