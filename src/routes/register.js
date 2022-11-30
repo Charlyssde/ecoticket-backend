@@ -81,7 +81,10 @@ router.post('/register', async (req, res) => {
             sucursal : user.sucursal ? user.sucursal : 'none'
         };
         const token = await getAuth().createCustomToken(user.uid, additionalClaims);
-        res.status(200).send({"token": token});
+        res.status(200).send({
+            "token": token,
+            "id":  user.id
+        });
         res.end();
     }).catch((error) => {
         let message = '';

@@ -26,4 +26,22 @@ file.post('/file', upload.single('file'), async (req, res) => {
     });
 })
 
+file.post('/file-user', upload.single('file'), async (req, res) => {
+    const {collection, id} = req.body;
+    const {fieldname, originalname, enconding, mimetype, buffer} = req.file;
+    const hashedName = await bcrypt.hash('secret', 2);
+    const finalName = hashedName.substring(8,14) + '_' +  originalname;
+    await storage.file(finalName).createWriteStream().end(buffer)
+
+    let data = {};
+    data[collection] = finalName;
+    console.log(data)
+    db.collection('users').doc(id).update(data).then(() => {
+        res.status(200).json({result : true})
+    }).catch((error) => {
+        console.log(error)
+        res.status(500).json({message : 'Ha ocurrido un error al tratar de guardar el documento'})
+    });
+})
+
 module.exports = file;
