@@ -12,7 +12,7 @@ file.post('/file', upload.single('file'), async (req, res) => {
     const {collection, owner} = req.body;
     const {fieldname, originalname, enconding, mimetype, buffer} = req.file;
     const hashedName = await bcrypt.hash('secret', 2);
-    const finalName = hashedName.substring(8,14) + '_' +  originalname;
+    const finalName = (hashedName.substring(8,14) + '_' +  originalname).replace("//", "x");
     await storage.file(finalName).createWriteStream().end(buffer)
 
     let data = {};
@@ -26,11 +26,11 @@ file.post('/file', upload.single('file'), async (req, res) => {
     });
 })
 
-file.post('/file-user', upload.single('file'), async (req, res) => {
+file.post('/file-csf', upload.single('file'), async (req, res) => {
     const {collection, id} = req.body;
     const {fieldname, originalname, enconding, mimetype, buffer} = req.file;
     const hashedName = await bcrypt.hash('secret', 2);
-    const finalName = hashedName.substring(8,14) + '_' +  originalname;
+    const finalName = ("CSF-" + hashedName.substring(8,14) + '_' +  originalname).replace("//", "x");
     await storage.file(finalName).createWriteStream().end(buffer)
 
     let data = {};
