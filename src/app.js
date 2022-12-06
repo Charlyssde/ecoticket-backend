@@ -14,5 +14,6 @@ app.use(require('./routes/email'));
 app.use(require('./routes/store'));
 app.use(require('./routes/file'));
 app.use(require('./routes/role'));
+app.use(require('./routes/vauchers'));
 
 module.exports = app;
