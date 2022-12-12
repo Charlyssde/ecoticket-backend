@@ -1,11 +1,11 @@
+const {PASSWORD_LENGTH} = require("./const");
 const generateRandomText = () => {
     let chars = "0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let passwordLength = 8;
+    let passwordLength = PASSWORD_LENGTH;
     let password = "";
-
-    for (var i = 0; i <= passwordLength; i++) {
-        var randomNumber = Math.floor(Math.random() * chars.length);
-        password += chars.substring(randomNumber, randomNumber +1);
+    for (let i = 0; i <= passwordLength; i++) {
+        let randomNumber = Math.floor(Math.random() * chars.length);
+        password += chars.substring(randomNumber, randomNumber + 1);
     }
 
     return password;
