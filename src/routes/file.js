@@ -1,63 +1,17 @@
 const {Router} = require('express')
 const {db, storage, getDownloadURL, ref } = require('../firebase')
 const multer = require('multer')
-const bcrypt = require("bcrypt");
-const {hash} = require("bcrypt");
+const {uploadFile, downloadFile} = require("../controllers/file");
 
 const upload = multer({storage: multer.memoryStorage()})
 
 file = Router();
 
-file.post('/file', upload.single('file'), async (req, res) => {
-    const {collection, owner} = req.body;
-    const {fieldname, originalname, enconding, mimetype, buffer} = req.file;
-    const hashedName = await bcrypt.hash('secret', 2);
-    const finalName = (hashedName.substring(8,14) + '_' +  originalname).replace("//", "x");
-    await storage.file(finalName).createWriteStream().end(buffer)
+file.post('/file', upload.single('file'),uploadFile)
 
-    let data = {};
-    data[collection] = finalName;
-    console.log(data)
-    db.collection('stores').doc(owner).update(data).then(() => {
-        res.status(200).json({result : true})
-    }).catch((error) => {
-        console.log(error)
-        res.status(500).json({message : 'Ha ocurrido un error al tratar de guardar el documento'})
-    });
-})
+file.post('/file-csf', upload.single('file'), uploadFile)
 
-file.post('/file-csf', upload.single('file'), async (req, res) => {
-    const {collection, id} = req.body;
-    const {fieldname, originalname, enconding, mimetype, buffer} = req.file;
-    const hashedName = await bcrypt.hash('secret', 2);
-    const finalName = ("CSF-" + hashedName.substring(8,14) + '_' +  originalname).replace("//", "x");
-    await storage.file(finalName).createWriteStream().end(buffer)
-
-    let data = {};
-    data[collection] = finalName;
-    console.log(data)
-    db.collection('users').doc(id).update(data).then(() => {
-        res.status(200).json({result : true})
-    }).catch((error) => {
-        console.log(error)
-        res.status(500).json({message : 'Ha ocurrido un error al tratar de guardar el documento'})
-    });
-})
-
-file.get('/download/:id', async (req, res) => {
-    const doc = await db.collection('users').doc(req.params.id).get();
-    const user = {id: doc.id,  ...doc.data(),}
-    const descarga =  await storage.file(user.cfdi);
-    descarga.getSignedUrl({action: 'read', expires: Date.now() + 1000 * 60 * 10}).then(urls => {
-            const signedUrl = urls[0]
-        // res.redirect(signedUrl);
-         res.status(200).json({signedUrl})   
-         console.log("----------------->", signedUrl) 
-        //res.send(signedUrl)
-    }); 
-
-})
+file.get('/download/:id', downloadFile)
     
-   
 
 module.exports = file;
