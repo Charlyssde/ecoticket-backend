@@ -1,12 +1,11 @@
 const User = require("../models/users");
 const generateRandomText = require("../utils/generateRandomText");
-const {getAuth} = require("firebase-admin/auth");
-const bcrypt = require("bcrypt");
+const {sendMail} = require("./mail");
+const {deleteAuth} = require("../models/auth");
 const {db} = require("../firebase");
-const nodemailer = require("nodemailer");
-const EmailAuth = require("../utils/email-auth");
+const {Crypt, Decrypt} = require("../utils/crypt");
 
-exports.getAllUsers = async function (req, res) {
+exports.getAllUsers = async (req, res) => {
     try {
         const querySnapshot = await User.getAll('users')
         const user = querySnapshot.docs.map(doc => ({id: doc.id, ...doc.data()}))
@@ -17,49 +16,60 @@ exports.getAllUsers = async function (req, res) {
     }
 }
 
-exports.getOneUser = async function (req, res) {
-    const doc = await User.getOne()
-    res.status(200).json({id: doc.id,...doc.data()})
+exports.getOneUser = async (req, res) => {
+    const doc = await User.getOne('users',req.param.id)
+    res.status(200).json({id: doc.id, ...doc.data()})
 }
 
-exports.saveUser = async function async (req, res) {
-    const{ username, name, apellidouno, apellidodos, role, sucursal, correo} = req.body
+exports.saveUser =  async(req, res) => {
+    const {username, name, apellidouno, apellidodos, role, sucursal, correo} = req.body
     let password = generateRandomText();
-    User.saveUser(username, name, apellidouno, apellidodos, role, sucursal, correo, password).then(() => {
-        res.status(201).json({message: 'Usuario agregado correctamente'});
-    }).catch((error) => {
+    try {
+        await User.saveUser(username, name, apellidouno, apellidodos, role, sucursal, correo, password);
+        await sendMail(req, password);
+        res.status(200).json({message : 'Ok'})
+    } catch (e) {
         let message = '';
-        const m = error.errorInfo.code;
-        if(m === 'auth/email-already-exists'){
+        const m = e.errorInfo.code;
+        if (m === 'auth/email-already-exists') {
             message = 'El correo ya ha sido registrado';
-        }else{
+        } else {
             message = 'Error desconocido'
         }
-        console.log(error.errorInfo)
-        res.status(500).json({message : message})
+        res.status(500).json({message: message})
+    }
+}
+
+exports.deleteUser = async(req, res) => {
+    try{
+        const doc = await User.getOne('users', req.params.id);
+        const user = {id: doc.id,  ...doc.data()}
+        await deleteAuth(user);
+        await User.deleteUser('users', user.id)
+        res.status(200).json({message: 'Usuario eliminado correctamente',});
+    }catch (e){
+        console.log("Error->", e);
+        res.status(500).json({message : e})
+    }
+}
+
+exports.updateUser = async(req, res) => {
+    await User.updateUser('users', req.param.id, req.body)
+    res.status(200).json({message: 'Usuario editado correctamente'});
+}
+
+exports.findByQuery =  async (req, res) => {
+    const id = req.params.id;
+    const data = await User.findByQuery('users', 'sucursal', '==', id);
+    const result = data.docs.map((d) => {
+        return {id : d.id, ...d.data()}
     })
+    res.status(200).json(result)
+}
 
-    contentHTML = `
-    <h1>Credenciales de acceso ECOTICKET </h1>
+exports.testDecrypt = async (req, res) => {
+    const text = req.params.text;
+    const encrypted = Crypt(text);
 
-    <p>Usuario: ${req.body.username}</p>
-    <p>contraseña: ${password}</p>
-    `;
-
-    const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true, // true for 465, false for other ports
-        auth: {
-            user: EmailAuth.email, // generated ethereal user
-            pass: EmailAuth.password, // generated ethereal password
-        },
-    });
-
-    await transporter.sendMail({
-        from: `ECOTICKET <${EmailAuth.email}>`,
-        to: req.body.correo,
-        subject: 'CREDENCIALES ECOTICKET',
-        html: contentHTML
-    })
+    res.status(200).json({result : encrypted});
 }

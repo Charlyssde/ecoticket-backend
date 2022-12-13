@@ -1,6 +1,8 @@
 const {db, storage, getDownloadURL, ref } = require('../firebase')
 const {getAuth} = require("firebase-admin/auth");
 const bcrypt = require("bcrypt");
+const {resolveContent} = require("nodemailer/lib/shared");
+const {reject} = require("bcrypt/promises");
 class User {
     static getAll = async (collection) => {
         return await db.collection(collection).get();
@@ -9,7 +11,7 @@ class User {
         return await db.collection(collection).doc(id).get();
     }
     static saveUser = async (username, name, apellidouno, apellidodos, role, sucursal, correo, password) => {
-        getAuth().createUser({
+        await getAuth().createUser({
             email : correo,
             password : password,
             disabled : false,
@@ -28,11 +30,19 @@ class User {
                 correo,
                 sucursal
             });
-            return true;
-        }).catch((error) => {
-            return error;
-        })
+        });
     }
+    static deleteUser = async (collection, id) => {
+        return await db.collection(collection).doc(id).delete();
+    }
+    static updateUser = async (collection, id, body) => {
+        return await db.collection(collection).doc(id).update(body);
+    }
+
+    static findByQuery = async (collection, key, compare, value) => {
+        return await db.collection(collection).where(key, compare, value).get();
+    }
+
 }
 
 module.exports = User
