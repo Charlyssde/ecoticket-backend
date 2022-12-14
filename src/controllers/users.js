@@ -17,8 +17,13 @@ exports.getAllUsers = async (req, res) => {
 }
 
 exports.getOneUser = async (req, res) => {
-    const doc = await getOne('users',req.param.id)
-    res.status(200).json({id: doc.id, ...doc.data()})
+    try{
+        const doc = await getOne('users',req.params.id)
+        res.status(200).json({id: doc.id, ...doc.data()})
+    }catch (e){
+        console.log("Error->", e);
+        res.status(500).json({message : e})
+    }
 }
 
 exports.saveUser =  async(req, res) => {
@@ -65,11 +70,4 @@ exports.findByQuery =  async (req, res) => {
         return {id : d.id, ...d.data()}
     })
     res.status(200).json(result)
-}
-
-exports.testDecrypt = async (req, res) => {
-    const text = req.params.text;
-    const encrypted = Crypt(text);
-
-    res.status(200).json({result : encrypted});
 }
