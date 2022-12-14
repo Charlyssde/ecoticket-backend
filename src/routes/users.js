@@ -9,6 +9,5 @@ router.post('/user', verifyToken, saveUser);
 router.delete('/user/:id', verifyToken, deleteUser);
 router.put('/user/:id', verifyToken, updateUser);
 router.get('/userid/:id', verifyToken, findByQuery);
-router.get('/crypt/:text', testDecrypt);
 
 module.exports = router;

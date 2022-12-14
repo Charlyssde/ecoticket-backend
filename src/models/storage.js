@@ -1,4 +1,4 @@
-const {db, storage} = require("../firebase");
+const {storage} = require("../firebase");
 exports.saveFile = async (finalName, buffer) => {
     return storage.file(finalName).createWriteStream().end(buffer);
 }
